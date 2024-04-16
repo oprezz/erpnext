@@ -13,7 +13,7 @@ def get_price(item_code, price_list, customer_group, company, qty=1, party=None)
 	if price_list:
 		price = frappe.get_all(
 			"Item Price",
-			fields=["price_list_rate", "currency"],
+			fields=["price_list_rate", "currency", "reference"],
 			filters={"price_list": price_list, "item_code": item_code},
 		)
 
@@ -45,7 +45,14 @@ def get_price(item_code, price_list, customer_group, company, qty=1, party=None)
 				pricing_rule_dict.update({"customer": party.name})
 
 			pricing_rule = get_pricing_rule_for_item(pricing_rule_dict)
+   
 			price_obj = price[0]
+   
+			if (len(price) > 1) and party:
+				for _price in enumerate(price):
+					if _price[1]['reference'] == party.name:
+						price_obj = _price[1]
+						break
 
 			if pricing_rule:
 				# price without any rules applied
